@@ -1,0 +1,2 @@
+import { Bar } from 'react-chartjs-2';import { BarElement, CategoryScale, Chart as ChartJS, LinearScale, Tooltip } from 'chart.js';ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+export function KpiChart({ visits, notifications }: { visits: number; notifications: number }) { return <Bar data={{ labels: ['Visits','Notifications'], datasets: [{ label: 'Today', data: [visits, notifications], backgroundColor: ['#2563eb','#16a34a'] }] }} options={{ responsive: true, plugins: { legend: { display: false } } }} />; }

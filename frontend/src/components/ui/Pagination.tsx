@@ -1,0 +1,2 @@
+import { Button } from './Button';
+export function Pagination({ offset, limit, onChange, hasNext }: { offset: number; limit: number; hasNext: boolean; onChange: (offset: number) => void }) { return <div className="flex items-center justify-end gap-2"><Button className="bg-muted text-foreground" disabled={offset===0} onClick={()=>onChange(Math.max(0, offset-limit))}>Previous</Button><span className="text-sm text-muted-foreground">Offset {offset}</span><Button className="bg-muted text-foreground" disabled={!hasNext} onClick={()=>onChange(offset+limit)}>Next</Button></div>; }
