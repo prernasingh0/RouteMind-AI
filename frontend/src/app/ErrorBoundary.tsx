@@ -1,0 +1,2 @@
+import { Component, ErrorInfo, ReactNode } from 'react';import { ServerErrorPage } from '@/pages/ErrorPages';
+export class ErrorBoundary extends Component<{children: ReactNode},{hasError:boolean}> { state={hasError:false}; static getDerivedStateFromError(){return {hasError:true};} componentDidCatch(error: Error, info: ErrorInfo){console.error('RouteMind frontend error', error, info);} render(){return this.state.hasError ? <ServerErrorPage/> : this.props.children;} }

@@ -1,0 +1,3 @@
+import { render, screen } from '@testing-library/react';import { QueryClient, QueryClientProvider } from '@tanstack/react-query';import { MemoryRouter } from 'react-router';import { describe, expect, it, vi } from 'vitest';import { LoginPage } from '@/features/auth/LoginPage';
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAuthenticated: false, isLoading: false, login: vi.fn() }) }));
+describe('LoginPage', () => { it('renders backend-backed sign in form', () => { render(<QueryClientProvider client={new QueryClient()}><MemoryRouter><LoginPage /></MemoryRouter></QueryClientProvider>); expect(screen.getByText(/Sign in to RouteMind AI/i)).toBeInTheDocument(); expect(screen.getByPlaceholderText(/Organization slug/i)).toBeInTheDocument(); }); });

@@ -1,0 +1,2 @@
+import { Card } from '@/components/ui/Card'; import { useAuth } from '@/contexts/AuthContext';
+export function SettingsPage(){const {user}=useAuth();return <div className="space-y-5"><h1 className="text-3xl font-bold">Settings</h1><Card><h2 className="font-semibold">Account</h2><p className="mt-2">{user?.full_name}</p><p className="text-sm text-muted-foreground">{user?.email}</p><p className="mt-3 text-sm">Roles: {user?.roles.join(', ') || 'None'}</p></Card></div>}
