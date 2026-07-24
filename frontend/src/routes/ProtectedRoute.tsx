@@ -1,0 +1,2 @@
+import { Navigate, Outlet } from 'react-router';import { LoadingSkeleton } from '@/components/feedback/States';import { useAuth } from '@/contexts/AuthContext';
+export function ProtectedRoute({ permission }: { permission?: string }) { const auth = useAuth(); if (auth.isLoading) return <LoadingSkeleton/>; if (!auth.isAuthenticated) return <Navigate to="/login" replace/>; if (permission && !auth.hasPermission(permission)) return <Navigate to="/403" replace/>; return <Outlet/>; }

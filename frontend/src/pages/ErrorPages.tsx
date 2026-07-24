@@ -1,0 +1,3 @@
+import { Link } from 'react-router';import { Card } from '@/components/ui/Card';
+function ErrorPage({ code, title }: { code: string; title: string }) { return <main className="grid min-h-screen place-items-center p-6"><Card className="text-center"><p className="text-5xl font-bold text-primary">{code}</p><h1 className="mt-3 text-xl font-semibold">{title}</h1><Link className="mt-4 inline-block" to="/">Return to dashboard</Link></Card></main>; }
+export const NotFoundPage = () => <ErrorPage code="404" title="Page not found"/>; export const ForbiddenPage = () => <ErrorPage code="403" title="You do not have access"/>; export const ServerErrorPage = () => <ErrorPage code="500" title="Something went wrong"/>;
