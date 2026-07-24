@@ -53,6 +53,6 @@ async def test_priority_calculation_breakdown(session_factory):
 
 @pytest.mark.asyncio
 async def test_authorization_requires_permissions(client):
-    login = await client.post("/api/v1/auth/login", json={"organization_slug":"acme","email":"rep@acme.test","password":"CorrectHorse1"})
+    login = await client.post("/api/v1/auth/login", json={"organization_slug":"acme","email":"rep@acme.com","password":"CorrectHorse1"})
     response = await client.get("/api/v1/territories", headers={"Authorization": f"Bearer {login.json()['access_token']}"})
     assert response.status_code == 403

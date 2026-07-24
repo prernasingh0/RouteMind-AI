@@ -1,10 +1,11 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.ai.memory.store import ConversationMemoryStore
 from app.ai.schemas.core import ChatRequest, ConversationRead, DoctorSearchAIRequest, PostCallRequest, PreCallRequest, RouteAIRequest, SummaryRequest
 from app.ai.services.orchestrator import AIOrchestratorService
+from app.ai.models.providers import LLMConfigurationError
 from app.api.dependencies import get_current_user, require_permissions
 from app.infrastructure.database.session import get_session
 from app.schemas.auth import UserMe
@@ -13,10 +14,26 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 
 @router.post("/chat")
 async def chat(payload: ChatRequest, session: AsyncSession = Depends(get_session), user: UserMe = Depends(require_permissions("ai:use"))):
-    service = AIOrchestratorService(session)
+    try:
+        service = AIOrchestratorService(session)
+    except LLMConfigurationError as exc:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, str(exc)) from exc
     if payload.stream:
         return StreamingResponse(service.stream_chat(user.organization_id, user.id, payload), media_type="text/event-stream")
-    return await service.chat(user.organization_id, user.id, payload)
+    try:
+        return await service.chat(user.organization_id, user.id, payload)
+    except Exception as exc:
+        from openai import APIError, AuthenticationError
+        name = exc.__class__.__name__.lower()
+        if "api key not valid" in str(exc).lower() or "api_key_invalid" in str(exc).lower():
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Gemini API key is invalid. Set GEMINI_API_KEY in backend/.env and recreate the backend.") from exc
+        if "authentication" in name or "permission" in name or "invalidargument" in name or "apierror" in name and "google" in str(type(exc)).lower():
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Gemini provider authentication failed. Check GEMINI_API_KEY.") from exc
+        if isinstance(exc, AuthenticationError):
+            raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LLM provider authentication failed") from exc
+        if isinstance(exc, APIError):
+            raise HTTPException(status.HTTP_502_BAD_GATEWAY, "LLM provider request failed") from exc
+        raise
 
 @router.post("/precall")
 async def precall(payload: PreCallRequest, session: AsyncSession = Depends(get_session), user: UserMe = Depends(require_permissions("ai:use"))): return await AIOrchestratorService(session).precall(user.organization_id, payload)

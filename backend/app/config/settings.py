@@ -1,7 +1,8 @@
 from functools import lru_cache
+import os
 from typing import Annotated
 from pydantic import AnyUrl, BeforeValidator, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 def parse_cors(value: str | list[str]) -> list[str]:
@@ -22,16 +23,20 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     DATABASE_URL: str = "postgresql+asyncpg://routemind:routemind@localhost:5432/routemind"
     REDIS_URL: str = "redis://localhost:6379/0"
-    BACKEND_CORS_ORIGINS: Annotated[list[str], BeforeValidator(parse_cors)] = []
+    BACKEND_CORS_ORIGINS: Annotated[list[str], NoDecode, BeforeValidator(parse_cors)] = []
     LOG_LEVEL: str = "INFO"
 
-    LLM_PROVIDER: str = "openai"
+    LLM_PROVIDER: str = "gemini"
     OPENAI_API_KEY: str | None = None
     OPENAI_MODEL: str = "gpt-4.1-mini"
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY") or "your-api-key"
     AZURE_OPENAI_API_KEY: str | None = None
     AZURE_OPENAI_ENDPOINT: str | None = None
     AZURE_OPENAI_API_VERSION: str = "2024-10-21"
     AZURE_OPENAI_DEPLOYMENT: str | None = None
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GOOGLE_MAPS_API_KEY: str = ""
 
 
 @lru_cache

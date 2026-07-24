@@ -34,6 +34,20 @@ class RouteCreateRequest(BaseModel):
     route_date: date
     stops: list[RouteStopRequest] = Field(default_factory=list)
 
+class RoutePlanRequest(BaseModel):
+    route_date: date
+    hcp_ids: list[UUID] = Field(default_factory=list)
+    workday_start: datetime
+    workday_end: datetime
+    origin_latitude: float | None = None
+    origin_longitude: float | None = None
+
+    @model_validator(mode="after")
+    def validate_workday(self):
+        if self.workday_end <= self.workday_start:
+            raise ValueError("workday_end must be after workday_start")
+        return self
+
 class RouteUpdateRequest(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=180)
     route_date: date | None = None

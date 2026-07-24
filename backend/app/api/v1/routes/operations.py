@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.dependencies import require_permissions
 from app.infrastructure.database.session import get_session
 from app.schemas.auth import UserMe
-from app.schemas.operations import CalendarRangeRequest, RouteCreateRequest, RouteUpdateRequest, VisitCreateRequest, VisitNoteRequest, VisitUpdateRequest
+from app.schemas.operations import CalendarRangeRequest, RouteCreateRequest, RoutePlanRequest, RouteUpdateRequest, VisitCreateRequest, VisitNoteRequest, VisitUpdateRequest
 from app.services.operations import CalendarService, RoutePlanningService, VisitManagementService
 
 router = APIRouter(tags=["Field Operations"])
@@ -29,6 +29,9 @@ async def visit_timeline(visit_id: UUID, session: AsyncSession = Depends(get_ses
 @router.post("/routes", status_code=status.HTTP_201_CREATED)
 async def create_route(payload: RouteCreateRequest, session: AsyncSession = Depends(get_session), user: UserMe = Depends(require_permissions("routes:write"))):
     return await RoutePlanningService(session).create(user.organization_id, user.id, payload)
+@router.post("/routes/plan")
+async def plan_route(payload: RoutePlanRequest, session: AsyncSession = Depends(get_session), user: UserMe = Depends(require_permissions("routes:write"))):
+    return await RoutePlanningService(session).plan(user.organization_id, payload)
 @router.patch("/routes/{route_id}")
 async def update_route(route_id: UUID, payload: RouteUpdateRequest, session: AsyncSession = Depends(get_session), user: UserMe = Depends(require_permissions("routes:write"))):
     return await RoutePlanningService(session).update(user.organization_id, route_id, payload)

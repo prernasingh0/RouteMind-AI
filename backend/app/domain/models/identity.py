@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, Text, UniqueConstraint
-from app.infrastructure.database.types import JSONDict, IPAddress, GUID
+from app.infrastructure.database.types import JSONDict, GUID, IPAddress
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.infrastructure.database.base import Base, BaseModel, TimestampMixin
 

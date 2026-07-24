@@ -25,6 +25,12 @@ This repository currently contains the Phase 1 production architecture foundatio
 
 ## Documentation
 
+### Local environment
+
+Copy `backend/.env.example` to `backend/.env` and set secrets locally. Never commit `.env` files or API keys. For Gemini, use `LLM_PROVIDER=gemini` and set `GEMINI_API_KEY`; for the frontend, optional browser variables belong in `frontend/.env`.
+
+After changing environment values, recreate the containers with `docker compose up --build -d`.
+
 - [Architecture](docs/architecture/architecture.md)
 - [Database Schema](docs/database/schema.md)
 - [ER Diagram](docs/database/er-diagram.md)
@@ -65,6 +71,8 @@ uvicorn app.main:app --reload
 ```
 
 The API is served at `http://localhost:8000`, OpenAPI docs at `/docs`, and versioned endpoints under `/api/v1`.
+
+For a usable local environment, run `alembic upgrade head && python -m app.seed` after starting PostgreSQL. This creates the demo account `rep@acme.com` with password `CorrectHorse1`, grants it the application permissions, and inserts sample doctor, visit, route, address, and notification records. The Docker Compose backend runs this seed command automatically; it is idempotent and intended for development only.
 
 ### Docker Compose
 
@@ -111,6 +119,8 @@ cd frontend
 npm install
 npm run dev
 ```
+
+To enable the route map integration, copy `frontend/.env.example` to `frontend/.env` and set `VITE_GOOGLE_MAPS_API_KEY` to your browser-restricted Google Maps key. Never commit the populated `.env` file.
 
 Build and test:
 

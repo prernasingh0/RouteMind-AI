@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 from sqlalchemy import DateTime, MetaData, func
@@ -26,4 +26,4 @@ class BaseModel(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     def __tablename__(cls) -> str:
         return ''.join(['_' + c.lower() if c.isupper() else c for c in cls.__name__]).lstrip('_') + 's'
     def mark_deleted(self) -> None:
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = datetime.now(timezone.utc)

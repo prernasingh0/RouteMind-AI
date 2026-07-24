@@ -10,5 +10,6 @@ export const routesApi = {
   list: () => apiClient.get<Route[]>('/routes', { params: { limit: 100, sort: 'route_date' } }).then((r) => r.data),
   create: (payload: { name: string; route_date: string; stops: { hcp_id: string }[] }) => apiClient.post<Route>('/routes', payload).then((r) => r.data),
   optimize: (id: string) => apiClient.post(`/routes/${id}/optimize`).then((r) => r.data),
+  plan: (payload: { route_date: string; hcp_ids: string[]; workday_start: string; workday_end: string; origin_latitude?: number; origin_longitude?: number }) => apiClient.post('/routes/plan', payload).then((r) => r.data),
 };
 export const calendarApi = (starts_at: string, ends_at: string) => apiClient.get<CalendarItem[]>('/calendar', { params: { starts_at, ends_at } }).then((r) => r.data);

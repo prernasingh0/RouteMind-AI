@@ -40,7 +40,26 @@ class AuthService:
         if not user or not user.is_active:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Inactive user")
         roles, perms = _roles_permissions(user)
-        return create_access_token(user_id=user.id, organization_id=user.organization_id, roles=roles, permissions=perms)
+        replacement = token_urlsafe(48)
+        token.revoked_at = datetime.now(timezone.utc)
+        self.session.add(
+            RefreshToken(
+                user_id=user.id,
+                token_hash=_hash_refresh(replacement),
+                expires_at=datetime.now(timezone.utc)
+                + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+                user_agent=token.user_agent,
+                ip_address=token.ip_address,
+            )
+        )
+        await self.session.commit()
+        access = create_access_token(
+            user_id=user.id,
+            organization_id=user.organization_id,
+            roles=roles,
+            permissions=perms,
+        )
+        return access, replacement
     async def logout(self, raw_refresh: str) -> None:
         token = await self.session.scalar(select(RefreshToken).where(RefreshToken.token_hash == _hash_refresh(raw_refresh)))
         if token and token.revoked_at is None:

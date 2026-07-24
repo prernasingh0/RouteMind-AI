@@ -15,8 +15,8 @@ async def login(payload: LoginRequest, request: Request, session: AsyncSession =
 
 @router.post("/refresh", response_model=TokenPair)
 async def refresh(payload: RefreshRequest, session: AsyncSession = Depends(get_session)) -> TokenPair:
-    access = await AuthService(session).refresh(payload.refresh_token)
-    return TokenPair(access_token=access, refresh_token=payload.refresh_token, expires_in=get_settings().ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    access, replacement = await AuthService(session).refresh(payload.refresh_token)
+    return TokenPair(access_token=access, refresh_token=replacement, expires_in=get_settings().ACCESS_TOKEN_EXPIRE_MINUTES * 60)
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(payload: LogoutRequest, session: AsyncSession = Depends(get_session)) -> None:

@@ -21,7 +21,7 @@ async def session_factory():
         org = Organization(name="Acme Pharma", slug="acme", status="active", settings={})
         perm = Permission(code="users:read", description="Read users")
         role = Role(name="Representative", organization_id=None, permissions=[perm])
-        user = User(organization=org, email="rep@acme.test", full_name="Rep User", hashed_password=hash_password("CorrectHorse1"), roles=[role])
+        user = User(organization=org, email="rep@acme.com", full_name="Rep User", hashed_password=hash_password("CorrectHorse1"), roles=[role])
         session.add(user); await session.commit()
     yield factory
     await engine.dispose()

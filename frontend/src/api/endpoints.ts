@@ -8,4 +8,4 @@ export const dashboardApi = {
   conversations: () => apiClient.get<Conversation[]>('/ai/conversations').then(r=>r.data),
   priority: (doctorId: string) => apiClient.get<PriorityBreakdown>(`/doctors/${doctorId}/priority`).then(r=>r.data)
 };
-export const aiApi = { chat: (message: string, conversation_id?: string) => apiClient.post<AIChatResponse>('/ai/chat', { message, conversation_id }).then(r=>r.data) };
+export const aiApi = { chat: (message: string, conversation_id?: string) => apiClient.post<AIChatResponse>('/ai/chat', { message, conversation_id }).then(r=>r.data), history: (id: string) => apiClient.get(`/ai/conversations/${id}`).then(r=>r.data) };

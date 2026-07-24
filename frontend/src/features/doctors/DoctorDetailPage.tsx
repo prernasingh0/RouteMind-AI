@@ -1,2 +1,192 @@
-import { useMutation, useQuery } from '@tanstack/react-query';import { Bot, FileText, Lightbulb, MessageSquare, TrendingUp } from 'lucide-react';import { Link, useParams } from 'react-router';import { aiApi } from '@/api/endpoints';import { doctorsApi } from '@/api/doctors';import { KpiChart } from '@/components/charts/KpiChart';import { EmptyState, ErrorState, LoadingSkeleton } from '@/components/feedback/States';import { Button } from '@/components/ui/Button';import { Card } from '@/components/ui/Card';
-export function DoctorDetailPage(){const {id}=useParams();const doctorId=id!;const profile=useQuery({queryKey:['doctor-profile',doctorId],queryFn:()=>doctorsApi.profile(doctorId)});const timeline=useQuery({queryKey:['doctor-timeline',doctorId],queryFn:()=>doctorsApi.timeline(doctorId)});const priorityHistory=useQuery({queryKey:['doctor-priority-history',doctorId],queryFn:()=>doctorsApi.priorityHistory(doctorId)});const ai=useMutation({mutationFn:(prompt:string)=>aiApi.chat(prompt)});if(profile.isLoading)return <LoadingSkeleton/>;if(profile.error)return <ErrorState message={(profile.error as Error).message}/>;const data=profile.data!;const d=data.doctor;return <div className="space-y-6"><div className="flex flex-wrap items-start gap-3"><div><h1 className="text-3xl font-bold">Dr. {d.first_name} {d.last_name}</h1><p className="text-muted-foreground">{data.territory?.name} {data.region ? `• ${data.region.name}` : ''} • Priority {data.current_priority.total_score}</p></div><Link className="ml-auto rounded-lg bg-muted px-4 py-2 text-sm" to={`/doctors/${doctorId}/edit`}>Edit</Link></div><section className="grid gap-4 lg:grid-cols-4"><Card><p className="text-sm text-muted-foreground">Status</p><p className="text-xl font-bold">{(d as any).status??'active'}</p></Card><Card><p className="text-sm text-muted-foreground">Engagement</p><p className="text-xl font-bold">{d.engagement_score}</p></Card><Card><p className="text-sm text-muted-foreground">Visits</p><p className="text-xl font-bold">{data.visit_history.length}</p></Card><Card><p className="text-sm text-muted-foreground">Recommendations</p><p className="text-xl font-bold">{data.recommendations.length}</p></Card></section><section className="grid gap-4 xl:grid-cols-[2fr_1fr]"><Card><h2 className="mb-4 font-semibold">AI actions</h2><div className="flex flex-wrap gap-2">{['Generate Pre-call Plan','Summarize History','Generate Talking Points','Analyze Engagement','Generate Follow-up Suggestions','Explain Priority'].map(label=><Button key={label} onClick={()=>ai.mutate(`${label} for doctor ${doctorId}`)}><Bot size={16}/>{label}</Button>)}</div>{ai.data && <div className="mt-4 rounded-lg bg-muted p-4"><b>AI response</b><p>{ai.data.content}</p></div>}</Card><Card><h2 className="mb-4 font-semibold">Priority breakdown</h2>{Object.entries(data.current_priority.factors).map(([k,v])=><p key={k} className="flex justify-between border-b py-1 text-sm"><span>{k}</span><b>{v}</b></p>)}</Card></section><section className="grid gap-4 lg:grid-cols-2"><Card><h2 className="mb-4 font-semibold">Visit frequency / engagement</h2><KpiChart visits={data.visit_history.length} notifications={data.recommendations.length}/></Card><Card><h2 className="mb-4 font-semibold">Priority trend</h2>{priorityHistory.data?.length ? priorityHistory.data.map(p=><p key={p.id} className="border-b py-2 text-sm"><TrendingUp size={14}/> {new Date(p.created_at).toLocaleDateString()} — {p.total_score}</p>) : <EmptyState title="No snapshots" description="Open the priority endpoint to create historical priority snapshots."/>}</Card></section><section className="grid gap-4 lg:grid-cols-3"><Card><h2 className="font-semibold">Timeline</h2>{timeline.data?.length?timeline.data.map(t=><p key={t.id} className="border-b py-2 text-sm"><b>{t.type}</b> {t.title}<br/><span className="text-muted-foreground">{new Date(t.occurred_at).toLocaleString()}</span></p>):<EmptyState title="No timeline" description="Visits, notes, AI conversations, recommendations, campaigns, products, attachments, priority changes, and notifications will appear here."/>}</Card><Card><h2 className="font-semibold">Products & Campaigns</h2>{[...data.products,...data.campaigns].length?[...data.products,...data.campaigns].map((item,i)=><p key={i} className="border-b py-2 text-sm"><FileText size={14}/>{JSON.stringify(item)}</p>):<EmptyState title="No associations" description="Product and campaign associations are loaded from the backend profile endpoint."/>}</Card><Card><h2 className="font-semibold">Recommendations</h2>{data.recommendations.length?data.recommendations.map((r:any)=><p key={r.id} className="border-b py-2 text-sm"><MessageSquare size={14}/>{r.title} — {r.score}</p>):<EmptyState title="No recommendations" description="Recommendations will appear after backend generation."/>}</Card></section></div>}
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Bot, FileText, MessageSquare, TrendingUp } from "lucide-react";
+import { Link, useParams } from "react-router";
+import { aiApi } from "@/api/endpoints";
+import { doctorsApi } from "@/api/doctors";
+import { KpiChart } from "@/components/charts/KpiChart";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingSkeleton,
+} from "@/components/feedback/States";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+export function DoctorDetailPage() {
+  const { id } = useParams();
+  const doctorId = id!;
+  const profile = useQuery({
+    queryKey: ["doctor-profile", doctorId],
+    queryFn: () => doctorsApi.profile(doctorId),
+  });
+  const timeline = useQuery({
+    queryKey: ["doctor-timeline", doctorId],
+    queryFn: () => doctorsApi.timeline(doctorId),
+  });
+  const priorityHistory = useQuery({
+    queryKey: ["doctor-priority-history", doctorId],
+    queryFn: () => doctorsApi.priorityHistory(doctorId),
+  });
+  const ai = useMutation({
+    mutationFn: (prompt: string) => aiApi.chat(prompt),
+  });
+  if (profile.isLoading) return <LoadingSkeleton />;
+  if (profile.error)
+    return <ErrorState message={(profile.error as Error).message} />;
+  const data = profile.data!;
+  const d = data.doctor;
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">
+            Dr. {d.first_name} {d.last_name}
+          </h1>
+          <p className="text-muted-foreground">
+            {data.territory?.name} {data.region ? `• ${data.region.name}` : ""}{" "}
+            • Priority {data.current_priority.total_score}
+          </p>
+        </div>
+        <Link
+          className="ml-auto rounded-lg bg-muted px-4 py-2 text-sm"
+          to={`/doctors/${doctorId}/edit`}
+        >
+          Edit
+        </Link>
+      </div>
+      <section className="grid gap-4 lg:grid-cols-4">
+        <Card>
+          <p className="text-sm text-muted-foreground">Status</p>
+          <p className="text-xl font-bold">{(d as any).status ?? "active"}</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted-foreground">Engagement</p>
+          <p className="text-xl font-bold">{d.engagement_score}</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted-foreground">Visits</p>
+          <p className="text-xl font-bold">{data.visit_history.length}</p>
+        </Card>
+        <Card>
+          <p className="text-sm text-muted-foreground">Recommendations</p>
+          <p className="text-xl font-bold">{data.recommendations.length}</p>
+        </Card>
+      </section>
+      <section className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+        <Card>
+          <h2 className="mb-4 font-semibold">AI actions</h2>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Generate Pre-call Plan",
+              "Summarize History",
+              "Generate Talking Points",
+              "Analyze Engagement",
+              "Generate Follow-up Suggestions",
+              "Explain Priority",
+            ].map((label) => (
+              <Button
+                key={label}
+                onClick={() => ai.mutate(`${label} for doctor ${d.first_name} ${d.last_name}}`)}
+              >
+                <Bot size={16} />
+                {label}
+              </Button>
+            ))}
+          </div>
+          {ai.data && (
+            <div className="mt-4 rounded-lg bg-muted p-4">
+              <b>AI response</b>
+              <p>{ai.data.content}</p>
+            </div>
+          )}
+        </Card>
+        <Card>
+          <h2 className="mb-4 font-semibold">Priority breakdown</h2>
+          {Object.entries(data.current_priority.factors).map(([k, v]) => (
+            <p key={k} className="flex justify-between border-b py-1 text-sm">
+              <span>{k}</span>
+              <b>{v}</b>
+            </p>
+          ))}
+        </Card>
+      </section>
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <h2 className="mb-4 font-semibold">Visit frequency / engagement</h2>
+          <KpiChart
+            visits={data.visit_history.length}
+            notifications={data.recommendations.length}
+          />
+        </Card>
+        <Card>
+          <h2 className="mb-4 font-semibold">Priority trend</h2>
+          {priorityHistory.data?.length ? (
+            priorityHistory.data.map((p) => (
+              <p key={p.id} className="border-b py-2 text-sm">
+                <TrendingUp size={14} />{" "}
+                {new Date(p.created_at).toLocaleDateString()} — {p.total_score}
+              </p>
+            ))
+          ) : (
+            <EmptyState
+              title="No snapshots"
+              description="Open the priority endpoint to create historical priority snapshots."
+            />
+          )}
+        </Card>
+      </section>
+      <section className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <h2 className="font-semibold">Timeline</h2>
+          {timeline.data?.length ? (
+            timeline.data.map((t) => (
+              <p key={t.id} className="border-b py-2 text-sm">
+                <b>{t.type}</b> {t.title}
+                <br />
+                <span className="text-muted-foreground">
+                  {new Date(t.occurred_at).toLocaleString()}
+                </span>
+              </p>
+            ))
+          ) : (
+            <EmptyState
+              title="No timeline"
+              description="Visits, notes, AI conversations, recommendations, campaigns, products, attachments, priority changes, and notifications will appear here."
+            />
+          )}
+        </Card>
+        <Card>
+          <h2 className="font-semibold">Products & Campaigns</h2>
+          {[...data.products, ...data.campaigns].length ? (
+            [...data.products, ...data.campaigns].map((item, i) => (
+              <p key={i} className="border-b py-2 text-sm">
+                <FileText size={14} />
+                {JSON.stringify(item)}
+              </p>
+            ))
+          ) : (
+            <EmptyState
+              title="No associations"
+              description="Product and campaign associations are loaded from the backend profile endpoint."
+            />
+          )}
+        </Card>
+        <Card>
+          <h2 className="font-semibold">Recommendations</h2>
+          {data.recommendations.length ? (
+            data.recommendations.map((r: any) => (
+              <p key={r.id} className="border-b py-2 text-sm">
+                <MessageSquare size={14} />
+                {r.title} — {r.score}
+              </p>
+            ))
+          ) : (
+            <EmptyState
+              title="No recommendations"
+              description="Recommendations will appear after backend generation."
+            />
+          )}
+        </Card>
+      </section>
+    </div>
+  );
+}

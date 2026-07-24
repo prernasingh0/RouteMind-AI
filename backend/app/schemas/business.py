@@ -92,7 +92,7 @@ class AttachmentUpdate(TenantUpdate): uploaded_by_user_id: UUID | None = None; e
 class AttachmentRead(BusinessResponse): uploaded_by_user_id: UUID; entity_type: str; entity_id: UUID | None = None; file_name: str; content_type: str; storage_key: str; size_bytes: int
 class NotificationCreate(TenantCreate): user_id: UUID; title: str; body: str; notification_type: str; read_at: datetime | None = None; metadata_: dict[str, Any] = Field(default_factory=dict, alias="metadata")
 class NotificationUpdate(TenantUpdate): user_id: UUID | None = None; title: str | None = None; body: str | None = None; notification_type: str | None = None; read_at: datetime | None = None; metadata_: dict[str, Any] | None = Field(default=None, alias="metadata")
-class NotificationRead(BusinessResponse): user_id: UUID; title: str; body: str; notification_type: str; read_at: datetime | None = None; metadata_: dict[str, Any] = Field(alias="metadata")
+class NotificationRead(BusinessResponse): user_id: UUID; title: str; body: str; notification_type: str; read_at: datetime | None = None; metadata_: dict[str, Any] = Field(validation_alias="metadata_", serialization_alias="metadata")
 class SettingsCreate(TenantCreate): scope: str; key: str; value: dict[str, Any]
 class SettingsUpdate(TenantUpdate): scope: str | None = None; key: str | None = None; value: dict[str, Any] | None = None
 class SettingsRead(BusinessResponse): scope: str; key: str; value: dict[str, Any]

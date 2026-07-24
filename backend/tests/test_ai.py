@@ -23,6 +23,14 @@ async def test_graph_routes_doctor_intent():
 def test_provider_selection_rejects_unknown():
     with pytest.raises(ValueError): LLMProviderFactory.create("unknown")
 
+def test_provider_selection_supports_gemini():
+    from app.ai.models.providers import GeminiProvider
+    with pytest.MonkeyPatch.context() as m:
+        m.setenv("GEMINI_API_KEY", "test-key")
+        m.setenv("LLM_PROVIDER", "gemini")
+        provider = LLMProviderFactory.create("gemini")
+        assert isinstance(provider, GeminiProvider)
+
 @pytest.mark.asyncio
 async def test_structured_output_validation_retries():
     calls = {"count": 0}

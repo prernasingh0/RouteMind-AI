@@ -1,6 +1,9 @@
 from sqlalchemy import CHAR, JSON, String, TypeDecorator
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from uuid import UUID
+from sqlalchemy.types import TypeDecorator
+from sqlalchemy.dialects.postgresql import INET
+
 
 class GUID(TypeDecorator):
     impl = CHAR
@@ -22,5 +25,9 @@ class JSONDict(TypeDecorator):
     cache_ok = True
 
 class IPAddress(TypeDecorator):
-    impl = String(45)
+    impl = String
     cache_ok = True
+    def load_dialect_impl(self, dialect):
+        if dialect.name == "postgresql":
+            return dialect.type_descriptor(INET())
+        return dialect.type_descriptor(String(45))
